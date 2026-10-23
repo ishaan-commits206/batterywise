@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BatteryWise | EV Battery Design Lab</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#17243a;--muted:#62718a;--line:#dfe6f0;--blue:#2058d4;--blue2:#eaf0ff;--green:#137a55;--amber:#9b6100;--red:#b52a38}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,Segoe UI,Arial,sans-serif}
+header{background:#102345;color:#fff;padding:20px clamp(16px,3vw,34px);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{display:flex;gap:12px;align-items:center}.logo{width:42px;height:42px;border-radius:12px;background:#dce8ff;color:#153d99;display:grid;place-items:center;font-size:24px;font-weight:900}
+h1{font-size:21px;margin:0}header p{margin:3px 0 0;color:#c7d6f3}.badge{border:1px solid #58709a;border-radius:99px;padding:7px 12px;font-size:11px;letter-spacing:.08em}
+main{max-width:1440px;margin:auto;padding:22px clamp(12px,2vw,26px) 36px}.intro{display:flex;justify-content:space-between;gap:18px;align-items:end;margin:0 0 18px;flex-wrap:wrap}.intro h2{font-size:25px;margin:0 0 6px}.intro p{margin:0;color:var(--muted);max-width:820px}
+.notice{border:1px solid #f0d49c;background:#fff8e8;border-radius:12px;padding:11px 14px;color:#6f4b0c;margin:0 0 18px}
+.grid{display:grid;grid-template-columns:minmax(320px,410px) minmax(0,1fr);gap:18px;align-items:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 3px 12px #182d4b08}
+.card h3{margin:0 0 4px;font-size:16px}.sub{color:var(--muted);font-size:12px;margin:0 0 14px}
+.sectiontag{font-size:10px;letter-spacing:.08em;font-weight:800;color:var(--blue);text-transform:uppercase;margin:0 0 8px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{min-width:0}.field.full{grid-column:1/-1}label{display:block;font-size:12px;font-weight:700;margin-bottom:5px;color:#35445d}
+input,select{width:100%;border:1px solid #cfd9e8;border-radius:9px;padding:10px 9px;background:white;color:var(--ink);font:inherit;min-width:0}
+input:focus,select:focus{outline:2px solid #b9cbff;border-color:var(--blue)}.hint{font-size:10px;color:var(--muted);margin-top:3px}
+.btns{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap}.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:800;cursor:pointer}.primary{background:var(--blue);color:white}.secondary{background:#edf2fa;color:#243753}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.physical-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}.kpi{border:1px solid var(--line);border-radius:12px;padding:13px;min-width:0}.kpi small{display:block;color:var(--muted);font-size:11px}.kpi strong{display:block;font-size:23px;letter-spacing:-.03em;margin:5px 0 2px;overflow-wrap:anywhere}.kpi em{font-style:normal;font-size:10px;color:var(--muted)}
+.resultsgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.result{border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}.result h4{margin:0 0 10px;font-size:13px}.rows{display:grid;grid-template-columns:1fr auto;gap:7px 10px;font-size:12px}.rows span:nth-child(odd){color:var(--muted)}.rows b{text-align:right;overflow-wrap:anywhere}
+.status{padding:11px 12px;border-radius:10px;margin-top:8px;font-size:12px}.info{background:#edf4ff;border:1px solid #d4e2ff}.warn{background:#fff7e8;border:1px solid #f2d69f}.good{background:#eaf8f1;border:1px solid #bde7d0}.bad{background:#fff0f1;border:1px solid #f0c5ca}
+.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12px;min-width:540px}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f5f8fd;color:#50617b;font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+.cells{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}.cell{width:17px;height:25px;border-radius:4px;border:1px solid #9fb4d8;background:linear-gradient(90deg,#dce8ff,#a9c5ff)}.cellgroup{border:1px dashed #afbdd3;padding:6px;border-radius:7px;margin:4px}.tiny{font-size:11px;color:var(--muted)}footer{color:var(--muted);font-size:11px;padding:4px 2px}
+@media(max-width:980px){.grid{grid-template-columns:1fr}.kpis,.physical-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.fields,.resultsgrid{grid-template-columns:1fr}.kpi strong{font-size:20px}header{align-items:flex-start}.badge{font-size:9px}.intro h2{font-size:22px}}
+
+.fixed-field input:disabled,.fixed-field select:disabled{opacity:.82;background:#eef2f7;color:#334155;cursor:not-allowed;border-style:dashed}
+.fixed-field .hint::after{content:" · Preset default (editable)";font-weight:600;color:#475569}
+.preset-lock-note{padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc;color:#334155;font-size:.9rem;margin:8px 0 14px}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.simple .adv{display:none}.legacy{display:none}
+</style></head>
+<body>
+<header><div class="brand"><div class="logo">B</div><div><h1>BatteryWise</h1><p>EV Battery System Design & Trade-off Lab</p></div></div><div class="badge">VEHICLE PRESETS · GO GO / TREO / CUSTOM</div></header>
+<main>
+<div class="btns" style="margin:0 0 14px"><span class="btn primary" aria-label="Active mode">Simple mode · Battery design</span></div>
+<div class="grid">
+<aside>
+<div class="card"><h3>1. Vehicle & duty inputs</h3><p class="sub">Vehicle and occupant/load weights feed road-load calculations and scale the energy target using the selected drive-cycle estimate. Replace assumptions with verified values.</p>
+<div class="fields">
+<div class="field full"><label for="vehicle">Reference vehicle</label><select id="vehicle"><option value="gogo">Bajaj GoGo P7012 (12.1 kWh, 251 km certified)</option><option value="treo">Mahindra Treo</option><option value="custom">Custom EV</option></select></div>
+<div class="field"><label for="kerb">Vehicle weight / kerb mass (kg)</label><input id="kerb" type="number" min="1" value="500"><div class="hint">Vehicle mass without occupants or extra load.</div></div><div class="field adv"><label for="payloadCapacity">Rated payload capacity (kg)</label><input id="payloadCapacity" type="number" min="0" value="500"><div class="hint">Compare carried load with the rated payload.</div></div>
+<div class="field"><label for="passengerWeight">Passenger + driver weight (kg)</label><input id="passengerWeight" type="number" min="0" value="70"><div class="hint">Enter the combined weight of everyone onboard.</div></div>
+<div class="field"><label for="cargo">Additional load / luggage (kg)</label><input id="cargo" type="number" min="0" value="0"></div>
+<div class="field adv"><label for="passengers">Passengers (excluding driver)</label><input id="passengers" type="number" min="0" max="6" value="0"></div>
+<div class="field adv"><label for="driverWeight">Driver mass (kg)</label><input id="driverWeight" type="number" min="1" value="70"></div>
+<div class="field"><label for="reserve">Energy reserve (%) (0 = match OEM range)</label><input id="reserve" type="number" min="0" max="60" value="15"></div>
+<div class="field"><label for="grade">Design grade (%)</label><input id="grade" type="number" min="0" max="40" value="10"></div>
+<div class="field"><label for="accel">Target acceleration (m/s²)</label><input id="accel" type="number" min="0" max="4" step=".1" value="0.8"></div>
+<div class="field"><label for="rolling">Rolling resistance coefficient</label><input id="rolling" type="number" min=".005" max=".1" step=".005" value=".015"></div>
+<div class="field"><label for="efficiency">Motor/controller efficiency (%)</label><input id="efficiency" type="number" min="50" max="99" value="90"></div>
+<div class="field"><label for="cd">Drag coefficient Cd</label><input id="cd" type="number" min=".1" max="1.5" step=".01" value=".45"><div class="hint">Assumption for a 3-wheeler.</div></div><div class="field"><label for="frontal">Frontal area (m²)</label><input id="frontal" type="number" min=".5" max="6" step=".1" value="2.2"></div><div class="field"><label for="aux">Auxiliary load (W)</label><input id="aux" type="number" min="0" value="150"><div class="hint">Lights, controller, BMS.</div></div><div class="field"><label for="regen">Regen returned to battery (%)</label><input id="regen" type="number" min="0" max="90" value="50"><div class="hint">Share of braking energy recovered.</div></div><div class="field full"><label for="cycle">Drive cycle for simulation</label><select id="cycle"><option value="city">City stop-go (124 s)</option><option value="mixed">Mixed city + open road</option><option value="steady">Steady cruise at max speed</option></select></div>
+</div></div>
+<div class="card"><h3>2. Motor & drivetrain</h3><p class="sub">Use published values where available; peak power is used to calculate the battery current requirement.</p>
+<div class="fields">
+<div class="field fixed-field"><label for="motorType">Motor type</label><select id="motorType"><option>Permanent Magnet Synchronous (PMS)</option><option>BLDC</option><option>Induction motor</option><option>Other / custom</option></select></div>
+<div class="field fixed-field"><label for="transmission">Transmission</label><select id="transmission"><option>2-speed AMT (GoGo reference)</option><option>Single-speed reduction</option><option>Other / custom</option></select></div>
+<div class="field fixed-field"><label for="motorContinuous">Continuous motor power (kW)</label><input id="motorContinuous" type="number" min=".1" step=".1" value="4.6"></div>
+<div class="field fixed-field"><label for="motorPeak">Peak motor power (kW)</label><input id="motorPeak" type="number" min=".1" step=".1" value="5.5"><div class="hint">Enter the verified peak power from the motor datasheet.</div></div>
+<div class="field fixed-field"><label for="torque">Peak torque (Nm)</label><input id="torque" type="number" min="0" value="40"></div>
+<div class="field fixed-field"><label for="speed">Maximum vehicle speed (km/h)</label><input id="speed" type="number" min="1" value="50"></div>
+<div class="field fixed-field"><label for="wheelRadius">Loaded wheel radius (m)</label><input id="wheelRadius" type="number" min=".1" max="1" step=".01" value=".25"><div class="hint">Assumption; measure/verify.</div></div>
+<div class="field fixed-field"><label for="ratio">Overall reduction ratio</label><input id="ratio" type="number" min="1" max="50" step=".1" value="8"><div class="hint">Assumption; transmission ratio not verified.</div></div>
+</div></div>
+<div class="card"><h3>3. Battery pack target</h3><p class="sub">The target voltage is a design input, not a verified GoGo OEM voltage.</p>
+<div class="fields">
+<div class="field"><label for="chem">Cell chemistry</label><select id="chem"><option value="lfp">LFP — 3.2 V nominal</option><option value="nmc">NMC — 3.6 V nominal</option></select></div>
+<div class="field"><label for="targetVoltage">Target nominal pack voltage (V)</label><input id="targetVoltage" type="number" min="12" step=".1" value="51.2"><div class="hint">GoGo voltage is not confirmed here; 51.2 V is a design assumption.</div></div>
+<div class="field fixed-field"><label for="targetEnergy">Minimum nominal pack energy (kWh)</label><input id="targetEnergy" type="number" min=".1" step=".1" value="12.1"></div>
+<div class="field"><label for="usable">Usable energy fraction (%)</label><input id="usable" type="number" min="50" max="100" value="90"></div>
+<div class="field"><label for="chargeTime">Desired charging time (hours)</label><input id="chargeTime" type="number" min=".2" step=".1" value="5.5"></div>
+<div class="field"><label for="chargerEfficiency">Charging efficiency (%)</label><input id="chargerEfficiency" type="number" min="50" max="100" value="90"></div>
+</div></div>
+<div class="card"><h3>4. Cell datasheet inputs</h3><p class="sub">These are example cell values, not the cell model used by Bajaj. Replace all with a selected manufacturer datasheet.</p>
+<div class="fields">
+<div class="field full"><label for="cellSel">Cell (library)</label><select id="cellSel"></select><div class="hint">Example values only, not datasheets. Verify with the manufacturer datasheet.</div></div>
+<div class="field"><label for="cellAh">Capacity per cell (Ah)</label><input id="cellAh" type="number" min=".1" step=".1" value="50"><div class="hint">Example cell only—not the selected auto cell.</div></div>
+<div class="field"><label for="cellR">DC resistance per cell (mΩ)</label><input id="cellR" type="number" min=".01" step=".01" value=".5"></div>
+<div class="field"><label for="cellMaxDischarge">Max continuous discharge per cell (A)</label><input id="cellMaxDischarge" type="number" min=".1" step=".1" value="25"></div>
+<div class="field"><label for="cellMaxCharge">Max charge current per cell (A)</label><input id="cellMaxCharge" type="number" min=".1" step=".1" value="25"></div>
+<div class="field"><label for="cellMass">Cell mass (kg)</label><input id="cellMass" type="number" min=".01" step=".01" value="1.0"></div>
+<div class="field"><label for="cellCost">Cell cost (₹ / cell)</label><input id="cellCost" type="number" min="1" step="10" value="1800"></div>
+</div>
+<div class="card"><h3>5. Physical battery pack dimensions</h3><p class="sub">Enter the selected cell's actual external dimensions from its datasheet. The layout is a compact rectangular estimate, not a CAD-validated enclosure.</p>
+<div class="fields">
+<div class="field"><label for="cellLength">Cell length (mm)</label><input id="cellLength" type="number" min="1" step=".1" value="148"><div class="hint">Example prismatic-cell dimension; replace with datasheet value.</div></div>
+<div class="field"><label for="cellWidth">Cell width (mm)</label><input id="cellWidth" type="number" min="1" step=".1" value="27"></div>
+<div class="field"><label for="cellHeight">Cell height / thickness (mm)</label><input id="cellHeight" type="number" min="1" step=".1" value="100"></div>
+<div class="field"><label for="cellSpacing">Gap between adjacent cells (mm)</label><input id="cellSpacing" type="number" min="0" step=".5" value="2"></div>
+<div class="field"><label for="packLayers">Cell layers (stacked)</label><input id="packLayers" type="number" min="1" max="20" step="1" value="1"><div class="hint">Number of layers along pack height.</div></div>
+<div class="field"><label for="caseAllowance">Enclosure / cooling allowance per side (mm)</label><input id="caseAllowance" type="number" min="0" step="1" value="10"><div class="hint">Added around the cell array on each outer side.</div></div>
+<div class="field"><label for="packMassAllowance">Non-cell mass allowance (%)</label><input id="packMassAllowance" type="number" min="0" max="200" step="1" value="20"><div class="hint">Estimated allowance for enclosure, BMS, busbars, cooling and mounts.</div></div>
+</div></div>
+<div class="btns"><button class="btn primary" id="analyze">Calculate battery design ↗</button><button class="btn secondary" id="reset">Load selected vehicle preset</button></div>
+<p class="hint">Series count is rounded to the nearest whole cell string compatible with target voltage. Parallel count is the larger of the energy and current requirements. Use verified motor, vehicle, controller, charger and cell datasheet values for a meaningful design calculation.</p>
+</div>
+</aside>
+<section>
+<div class="card"><h3>Battery specification</h3><p class="sub">The pack your inputs need, calculated from the vehicle, motor and cell data you provide.</p><div id="specBody"></div></div>
+<div class="card legacy"><h3>5. Vehicle load & motor calculations</h3><p class="sub">Calculated from your entries; grade and acceleration estimates use simplified physics.</p><div class="kpis">
+<div class="kpi"><small>Total loaded mass</small><strong id="loadedMass">—</strong><em>kerb mass + all carried load</em></div><div class="kpi"><small>Payload used / capacity</small><strong id="payloadUsed">—</strong><em id="payloadStatus">including driver, passengers and luggage</em></div>
+<div class="kpi"><small>Motor peak current</small><strong id="peakCurrent">—</strong><em>estimated at nominal pack voltage</em></div>
+<div class="kpi"><small>Energy sizing requirement</small><strong id="rangeEnergy">—</strong><em>includes reserve and usable-energy setting</em></div>
+<div class="kpi"><small>Target charge current</small><strong id="targetChargeCurrent">—</strong><em>average estimate at pack level</em></div>
+</div><div id="vehicleNotes" aria-live="polite"></div></div>
+<div class="card legacy"><h3>6. Recommended series-parallel concept</h3><p class="sub">The result is a mathematical candidate only; validate against cell and controller datasheets.</p><div class="kpis">
+<div class="kpi"><small>Cells in series (S)</small><strong id="series">—</strong><em>sets nominal pack voltage</em></div>
+<div class="kpi"><small>Cells in parallel (P)</small><strong id="parallel">—</strong><em>sets capacity / current capability</em></div>
+<div class="kpi"><small>Total cell count</small><strong id="cellCount">—</strong><em>S × P</em></div>
+<div class="kpi"><small>Pack nominal energy</small><strong id="packEnergy">—</strong><em>nominal estimate</em></div>
+</div><div class="resultsgrid" style="margin-top:12px">
+<div class="result"><h4>Electrical pack summary</h4><div class="rows" id="electricalRows"></div></div>
+<div class="result"><h4>Cell current / resistance / thermal screening</h4><div class="rows" id="cellRows"></div></div>
+</div><div id="packNotes" aria-live="polite"></div>
+<div style="margin-top:14px"><b style="font-size:12px">Cell arrangement · schematic only</b><div id="cellDiagram" class="cells"></div><p class="tiny">Schematic displays up to 120 cell icons; it is not a physical pack layout or wiring drawing.</p></div></div>
+<div class="card legacy"><h3>6b. Drive-cycle simulation</h3><p class="sub">Second-by-second road load → battery power → pack voltage, current, energy use, regen and heat, for the selected cycle (flat road).</p><div class="kpis" id="simKpis"></div><div id="simNotes"></div><div id="simChart" style="margin-top:12px"></div></div>
+<div class="card legacy"><h3>7. Constraint & trade-off report</h3><p class="sub">Review the assumptions and input data used for this calculated design.</p><div id="issues"></div></div>
+<div class="card"><h3>7b. Compare designs</h3><p class="sub">Save the current design, change the cell, voltage or vehicle, and save again to compare side by side.</p><div class="btns" style="margin:0 0 10px"><button class="btn primary" id="cmpSave">Save design to compare</button><button class="btn secondary" id="cmpClear">Clear</button></div><div class="tablewrap"><table><thead><tr><th>Design</th><th>S×P</th><th>Cells</th><th>kWh</th><th>Cell mass (kg)</th><th>Cell cost</th><th>Cycle energy (Wh/km)</th><th>Peak cell C</th></tr></thead><tbody id="cmpBody"></tbody></table></div></div>
+<div class="card"><h3>8. Design evidence report</h3><p class="sub">Download a concise snapshot of inputs, calculated results and unresolved verification points.</p><div class="btns"><button class="btn primary" id="download">Download report (.txt)</button><button class="btn secondary" id="print">Print / Save as PDF</button></div><div id="reportPreview" class="status info">Calculate the pack concept to generate the report.</div></div>
+<footer>Browser-only demo · No data leaves this page. Official sources: <a href="https://www.bajajauto.com/three-wheelers/gogo/gogo-P70" target="_blank" rel="noopener">Bajaj GoGo P7012</a> and <a href="https://mahindralastmilemobility.com/treo" target="_blank" rel="noopener">Mahindra Treo</a>. Vehicle mass/payload and cell-level inputs are assumptions until verified. Use qualified engineering review for real designs.</footer>
+</section></div></main>
+<script>
+const $=id=>document.getElementById(id);
+const ids=['cd','frontal','aux','regen','cycle','vehicle','kerb','payloadCapacity','cargo','passengers','passengerWeight','driverWeight','reserve','grade','accel','rolling','efficiency','motorType','transmission','motorContinuous','motorPeak','torque','speed','wheelRadius','ratio','chem','targetVoltage','targetEnergy','usable','chargeTime','chargerEfficiency','cellAh','cellR','cellMaxDischarge','cellMaxCharge','cellMass','cellCost','cellLength','cellWidth','cellHeight','cellSpacing','packLayers','caseAllowance','packMassAllowance'];
+const defaults={cd:.45,frontal:2.2,aux:150,regen:50,cycle:'city',vehicle:'gogo',kerb:720,payloadCapacity:500,cargo:20,passengers:3,passengerWeight:265,driverWeight:70,reserve:15,grade:10,accel:.8,rolling:.015,efficiency:90,motorType:'Permanent Magnet Synchronous (PMS)',transmission:'2-speed AMT (GoGo reference)',motorContinuous:5.5,motorPeak:5.5,torque:40,speed:50,wheelRadius:.25,ratio:8,chem:'lfp',targetVoltage:51.2,targetEnergy:12.1,usable:90,chargeTime:5.5,chargerEfficiency:90,cellAh:50,cellR:.5,cellMaxDischarge:25,cellMaxCharge:25,cellMass:1,cellCost:1800,cellLength:148,cellWidth:27,cellHeight:100,cellSpacing:2,packLayers:1,caseAllowance:10,packMassAllowance:20};
+let last=null;
+function read(){const v={};for(const id of ids){const el=$(id);v[id]=el.tagName==='SELECT'?el.value:Number(el.value);if(el.tagName!=='SELECT'&&(!Number.isFinite(v[id])||el.value.trim()===''))throw new Error('Please enter a valid value for '+id+'.');if(el.tagName!=='SELECT'&&v[id]<0)throw new Error('Negative values are not allowed.');}for(const id of ['kerb','driverWeight','efficiency','motorPeak','speed','wheelRadius','ratio','targetVoltage','targetEnergy','usable','chargeTime','chargerEfficiency','cellAh','cellR','cellMaxDischarge','cellMaxCharge','cellMass','cellCost','cellLength','cellWidth','cellHeight','packLayers'])if(v[id]<=0)throw new Error(id+' must be greater than zero.');if(v.packMassAllowance>200)throw new Error('Non-cell mass allowance must be 200% or less.');if(v.usable>100)throw new Error('Usable energy fraction must be 100% or less.');if(v.efficiency>100||v.chargerEfficiency>100)throw new Error('Efficiency must be between 1% and 100%.');return v}
+function fmt(x,d=2){return Number.isFinite(x)?x.toLocaleString('en-IN',{maximumFractionDigits:d,minimumFractionDigits:0}):'—'}
+function rupee(x){return '₹'+Math.round(x).toLocaleString('en-IN')}
+function estimateCycleWhKm(v,mass){
+ const sp=cycleProfile(v),eff=v.efficiency/100; let wh=0,dist=0;
+ for(let i=1;i<sp.length;i++){
+  const speed=(sp[i]+sp[i-1])/2,accel=sp[i]-sp[i-1];
+  const force=mass*9.81*v.rolling+.5*1.2*v.cd*v.frontal*speed*speed+mass*accel;
+  const wheelPower=force*speed;
+  const batteryPower=wheelPower>=0?wheelPower/eff:wheelPower*v.regen/100;
+  wh+=(batteryPower+v.aux)/3600; dist+=speed/1000;
+ }
+ return dist>0?Math.max(1,wh/dist):1;
+}
+function calculate(v){
+ const cellV=v.chem==='lfp'?3.2:3.6;
+ const passengerLoad=v.passengerWeight; const payloadUsed=passengerLoad+v.cargo; const loadedMass=v.kerb+payloadUsed;
+ const efficiency=v.efficiency/100, usable=v.usable/100, reserve=1+v.reserve/100;
+ // Use the selected drive-cycle energy-per-km as a mass-sensitive scaling factor.
+ // targetEnergy remains the baseline minimum pack energy at kerb mass; no editable range input is added.
+ const baselineCycleWhKm=estimateCycleWhKm(v,v.kerb);
+ const loadedCycleWhKm=estimateCycleWhKm(v,loadedMass);
+ const loadEnergyFactor=baselineCycleWhKm>0?Math.max(1,loadedCycleWhKm/baselineCycleWhKm):1;
+ const requiredEnergy=v.targetEnergy*loadEnergyFactor*reserve;
+ const energyTarget=Math.max(v.targetEnergy,requiredEnergy/usable);
+ const series=Math.max(1,Math.round(v.targetVoltage/cellV));
+ const nominalV=series*cellV;
+ const energyP=Math.ceil((energyTarget*1000)/(nominalV*v.cellAh));
+ const peakPackA=v.motorPeak*1000/(nominalV*efficiency);
+ const currentP=Math.ceil(peakPackA/v.cellMaxDischarge);
+ const parallel=Math.max(1,energyP,currentP);
+ const total=series*parallel, packAh=parallel*v.cellAh, packWh=nominalV*packAh;
+ const packR=series*(v.cellR/1000)/parallel;
+ const cellDischargeA=peakPackA/parallel;
+ const continuousPackA=parallel*v.cellMaxDischarge;
+ // Battery-side charging current: charger efficiency affects grid input power, not current entering the pack.
+ const chargePackA=(packWh/Math.max(.1,v.chargeTime))/nominalV;
+ const cellChargeA=chargePackA/parallel;
+ const chargerInputPowerW=(packWh/Math.max(.1,v.chargeTime))/Math.max(.5,v.chargerEfficiency/100);
+ const heatW=peakPackA*peakPackA*packR;
+ const mass=total*v.cellMass, cost=total*v.cellCost;
+ // Compact rectangular layout estimate: choose rows/columns minimizing cell-array footprint.
+ // Electrical S/P grouping does not uniquely determine physical placement, so this is a packaging assumption.
+ const cellsPerLayer=Math.ceil(total/v.packLayers);
+ let best=null;
+ for(let rows=1;rows<=cellsPerLayer;rows++){
+  const cols=Math.ceil(cellsPerLayer/rows);
+  const len=cols*v.cellLength+Math.max(0,cols-1)*v.cellSpacing;
+  const wid=rows*v.cellWidth+Math.max(0,rows-1)*v.cellSpacing;
+  const area=len*wid;
+  if(!best||area<best.area)best={rows,cols,len,wid,area};
+ }
+ const packLength=best.len+2*v.caseAllowance;
+ const packWidth=best.wid+2*v.caseAllowance;
+ const packHeight=v.packLayers*v.cellHeight+Math.max(0,v.packLayers-1)*v.cellSpacing+2*v.caseAllowance;
+ const packVolumeL=packLength*packWidth*packHeight/1000000;
+ const packFootprintM2=packLength*packWidth/1000000;
+ const estimatedPackMass=mass*(1+v.packMassAllowance/100);
+
+ const grade=Math.atan(v.grade/100);
+ const roadSpeed=v.speed/3.6;
+ const roadForce=loadedMass*9.81*(Math.sin(grade)+v.rolling*Math.cos(grade))+loadedMass*v.accel+.5*1.2*v.cd*v.frontal*roadSpeed*roadSpeed;
+ const wheelTorque=roadForce*v.wheelRadius;
+ const wheelPower=roadForce*roadSpeed;
+ const motorWheelTorque=v.torque*v.ratio*.9;
+ const runtimeAtPeak=packWh/1000/(v.motorPeak/Math.max(.5,efficiency));
+ const cs=(name,kmh,gr,ac)=>{const vv=kmh/3.6,th=Math.atan(gr/100),F=loadedMass*9.81*(Math.sin(th)+v.rolling*Math.cos(th))+.5*1.2*v.cd*v.frontal*vv*vv+loadedMass*ac;return {name,F,T:F*v.wheelRadius,P:F*vv,Tavail:v.torque*v.ratio*.9,Pavail:v.motorPeak*1000*efficiency}};
+ const cases=[cs('Flat cruise at max speed',v.speed,0,0),cs('Launch at '+v.accel+' m/s² (15 km/h)',15,0,v.accel),cs('Hill climb '+v.grade+'% at 15 km/h',15,v.grade,0)];
+ return {cases,v,cellV,loadedMass,payloadUsed,passengerLoad,requiredEnergy,energyTarget,loadEnergyFactor,baselineCycleWhKm,loadedCycleWhKm,series,nominalV,energyP,peakPackA,currentP,parallel,total,packAh,packWh,packR,cellDischargeA,continuousPackA,chargePackA,cellChargeA,chargerInputPowerW,heatW,mass,cost,roadForce,wheelTorque,wheelPower,motorWheelTorque,runtimeAtPeak,best,packLength,packWidth,packHeight,packVolumeL,packFootprintM2,estimatedPackMass};
+}
+function render(){
+ let v;try{v=read()}catch(e){$('vehicleNotes').innerHTML='<div class="status bad">'+e.message+'</div>';return}
+ const d=calculate(v);if(v.packLayers>d.total){$('vehicleNotes').innerHTML='<div class="status bad">Cell layers cannot exceed the total number of cells.</div>';return}last=d;try{simulate(d);spec(d)}catch(e){console.error(e)}try{saveState()}catch(e){}
+ $('loadedMass').textContent=fmt(d.loadedMass)+' kg'; $('payloadUsed').textContent=fmt(d.payloadUsed)+' / '+fmt(v.payloadCapacity)+' kg'; const payloadOver=d.payloadUsed>v.payloadCapacity; $('payloadStatus').textContent=payloadOver?'OVER CAPACITY by '+fmt(d.payloadUsed-v.payloadCapacity)+' kg':fmt(v.payloadCapacity-d.payloadUsed)+' kg remaining'; $('payloadStatus').style.color=payloadOver?'#b42318':'#16794b';
+ $('peakCurrent').textContent=fmt(d.peakPackA)+' A';
+ $('rangeEnergy').textContent=fmt(d.requiredEnergy)+' kWh';
+ $('targetChargeCurrent').textContent=fmt(d.chargePackA)+' A';
+ $('series').textContent='Series – '+d.series;$('parallel').textContent='Parallel – '+d.parallel;$('cellCount').textContent=fmt(d.total,0);$('packEnergy').textContent=fmt(d.packWh/1000)+' kWh';
+ $('electricalRows').innerHTML=`<span>Cell nominal voltage</span><b>${fmt(d.cellV)} V</b><span>Nominal pack voltage</span><b>${fmt(d.nominalV)} V</b><span>Voltage target</span><b>${fmt(d.v.targetVoltage)} V</b><span>Pack capacity</span><b>${fmt(d.packAh)} Ah</b><span>Nominal pack energy</span><b>${fmt(d.packWh/1000)} kWh</b><span>Estimated usable energy</span><b>${fmt(d.packWh/1000*d.v.usable/100)} kWh</b><span>Load energy factor vs kerb baseline</span><b>${fmt(d.loadEnergyFactor)}×</b><span>Cell count</span><b>${d.series}S × ${d.parallel}P = ${d.total}</b>`;
+ $('cellRows').innerHTML=`<span>Peak pack current estimate</span><b>${fmt(d.peakPackA)} A</b><span>Current per cell at peak</span><b>${fmt(d.cellDischargeA)} A</b><span>Parallel current capability*</span><b>${fmt(d.continuousPackA)} A</b><span>Pack DC resistance estimate</span><b>${fmt(d.packR*1000)} mΩ</b><span>Peak I²R loss estimate</span><b>${fmt(d.heatW)} W</b><span>Cell charge current estimate</span><b>${fmt(d.cellChargeA)} A</b><span>Estimated charger input power</span><b>${fmt(d.chargerInputPowerW/1000)} kW</b><span>Cell mass subtotal</span><b>${fmt(d.mass)} kg</b><span>Cell cost subtotal</span><b>${rupee(d.cost)}</b>`;
+ let vehicleMsg=`<div class="status ${payloadOver?'bad':'info'}"><b>Estimated loaded mass:</b> ${fmt(d.loadedMass)} kg = ${fmt(v.kerb)} kg kerb mass + ${fmt(d.payloadUsed)} kg entered driver/passenger/luggage load. The road-load estimate uses this entered load. Energy sizing is scaled by ${fmt(d.loadEnergyFactor)}× versus the kerb-mass drive-cycle baseline. ${payloadOver?'Payload limit exceeded by '+fmt(d.payloadUsed-v.payloadCapacity)+' kg.':'Payload remaining: '+fmt(v.payloadCapacity-d.payloadUsed)+' kg.'} At ${fmt(v.grade)}% grade plus ${fmt(v.accel)} m/s² acceleration, simplified required tractive force is ${fmt(d.roadForce)} N, wheel torque ${fmt(d.wheelTorque)} Nm, and road-load power at ${fmt(v.speed)} km/h is ${fmt(d.wheelPower/1000)} kW.</div>`;
+ $('vehicleNotes').innerHTML=vehicleMsg;
+ const warnings=[];
+ if(Math.abs(d.nominalV-v.targetVoltage)/v.targetVoltage>.05)warnings.push(['warn',`Series count gives ${fmt(d.nominalV)} V, more than 5% away from target ${fmt(v.targetVoltage)} V. Reconcile the target with allowed min/max voltage.`]);
+ if(d.packWh/1000<v.targetEnergy)warnings.push(['bad','Calculated nominal pack energy is below the specified energy target. Increase parallel count or select a different cell capacity.']);
+ if(d.packWh/1000*d.v.usable/100<d.requiredEnergy)warnings.push(['bad','Estimated usable pack energy is below the calculated sizing energy requirement. Increase pack energy or review the energy assumptions.']);
+ if(d.cellDischargeA>v.cellMaxDischarge)warnings.push(['bad','Per-cell peak discharge current exceeds the entered cell limit. Revisit parallel count or cell rating.']);
+ else warnings.push(['good','Per-cell peak discharge current is within the entered cell limit (screening only).']);
+ if(d.cellChargeA>v.cellMaxCharge)warnings.push(['bad','Estimated charge current per cell exceeds the entered cell charge limit. Increase parallel count, reduce charger current, or change charge-time target.']);
+ if(d.heatW>v.motorPeak*1000*.05)warnings.push(['warn','Estimated peak resistive loss is above 5% of motor peak power. Verify real DC resistance, current profile and thermal design.']);
+ if(d.mass>150)warnings.push(['warn','Cell-only mass is high. Add enclosure, busbars, BMS, cooling and mounting mass before checking vehicle payload.']);
+ for(const c of d.cases){if(c.T>c.Tavail)warnings.push(['warn',c.name+': needs '+fmt(c.T)+' Nm at the wheel vs '+fmt(c.Tavail)+' Nm available (motor torque × assumed ratio).']);if(c.P>c.Pavail)warnings.push(['warn',c.name+': needs '+fmt(c.P/1000)+' kW at the wheel vs '+fmt(c.Pavail/1000)+' kW available.']);}
+ warnings.push(['info','The kerb mass and payload capacity presets for GoGo/Treo are user-provided starting values in this demo and must be verified against the exact vehicle variant. Vehicle profile fields are locked for named presets; select Custom EV to edit them. Cell ratings, resistance, cell mass/cost, target voltage and gear ratio are also editable assumptions.']);
+ warnings.push(['info','This model does not predict cell temperature, voltage sag, BMS trips, ageing, transient motor maps, regenerative braking or crash safety.']);
+ $('packNotes').innerHTML=warnings.slice(0,2).map(w=>`<div class="status ${w[0]}">${w[1]}</div>`).join('');
+ $('issues').innerHTML=warnings.map(w=>`<div class="status ${w[0]}">${w[1]}</div>`).join('');
+ $('cellDiagram').innerHTML='';for(let i=0;i<Math.min(d.total,120);i++){const c=document.createElement('span');c.className='cell';c.title='Illustrative cell '+(i+1);$('cellDiagram').appendChild(c)}
+ $('reportPreview').innerHTML=`<b>Report ready.</b> Calculated configuration: Series – ${d.series}, Parallel – ${d.parallel} (${d.total} cells), ${fmt(d.nominalV)} V nominal, ${fmt(d.packAh)} Ah, ${fmt(d.packWh/1000)} kWh. Total operating weight: ${fmt(d.loadedMass)} kg.</div><div class="status info"><b>Physical pack estimate:</b> ${fmt(d.packLength,1)} × ${fmt(d.packWidth,1)} × ${fmt(d.packHeight,1)} mm; volume ${fmt(d.packVolumeL,2)} L; estimated pack weight ${fmt(d.estimatedPackMass,1)} kg. Preliminary packaging estimate, not CAD validated.</div>`;
+}
+function reportText(){if(!last)render();if(!last)return 'Please correct input errors and calculate again.';const d=last,v=d.v;return `BATTERYWISE — EV BATTERY SYSTEM DESIGN CONCEPT\nGenerated: ${new Date().toLocaleString()}\n\nIMPORTANT: Concept sizing only; not validated or approved for real vehicle use.\n\nVEHICLE / DUTY INPUTS\nVehicle: ${v.vehicle==='gogo'?'Bajaj GoGo P7012':v.vehicle==='treo'?'Mahindra Treo':'Custom EV'}\nKerb mass input: ${v.kerb} kg (preset/input; verify exact variant)\nRated payload capacity input: ${v.payloadCapacity} kg\nPayload used: ${fmt(d.payloadUsed)} kg; remaining/over limit: ${fmt(v.payloadCapacity-d.payloadUsed)} kg\nCombined passenger + driver weight: ${v.passengerWeight} kg; extra load ${v.cargo} kg\nLoad-related energy factor vs kerb-mass baseline: ${fmt(d.loadEnergyFactor)}×\nLoaded mass estimate: ${fmt(d.loadedMass)} kg\nMinimum nominal pack energy input: ${v.targetEnergy} kWh; reserve ${v.reserve}%\nEnergy requirement for sizing: ${fmt(d.requiredEnergy)} kWh (includes mass factor ${fmt(d.loadEnergyFactor)}×, reserve)\nGrade ${v.grade}%; acceleration ${v.accel} m/s²; speed ${v.speed} km/h\n\nMOTOR / TRANSMISSION\nMotor type: ${v.motorType}; transmission: ${v.transmission}\nContinuous power: ${v.motorContinuous} kW; peak power: ${v.motorPeak} kW; peak torque: ${v.torque} Nm; top speed: ${v.speed} km/h\n\nCELL INPUTS (NOT OEM-VERIFIED)\nChemistry: ${v.chem}; cell nominal voltage ${d.cellV} V; capacity ${v.cellAh} Ah; resistance ${v.cellR} mΩ\nMax discharge/cell ${v.cellMaxDischarge} A; max charge/cell ${v.cellMaxCharge} A; cell mass ${v.cellMass} kg; cost ${rupee(v.cellCost)}\n\nCALCULATED PACK CONCEPT\nSeries: ${d.series} cells; Parallel: ${d.parallel} cells; total cells: ${d.total}\nNominal pack voltage: ${fmt(d.nominalV)} V; target voltage input: ${v.targetVoltage} V\nPack capacity: ${fmt(d.packAh)} Ah; nominal energy: ${fmt(d.packWh/1000)} kWh; usable energy: ${fmt(d.packWh/1000*v.usable/100)} kWh\nEstimated peak pack current: ${fmt(d.peakPackA)} A; current per cell ${fmt(d.cellDischargeA)} A\nEstimated battery-side charge current: ${fmt(d.chargePackA)} A; estimated charger input power: ${fmt(d.chargerInputPowerW/1000)} kW\nPack resistance estimate: ${fmt(d.packR*1000)} mΩ; peak I²R loss estimate ${fmt(d.heatW)} W\nCell-only mass estimate: ${fmt(d.mass)} kg; cell-only cost estimate ${rupee(d.cost)}\n\nPHYSICAL BATTERY PACK ESTIMATE\nCell dimensions (L × W × H): ${v.cellLength} × ${v.cellWidth} × ${v.cellHeight} mm; spacing ${v.cellSpacing} mm; layers ${v.packLayers}\nEstimated pack dimensions (L × W × H): ${fmt(d.packLength,1)} × ${fmt(d.packWidth,1)} × ${fmt(d.packHeight,1)} mm\nEstimated pack volume: ${fmt(d.packVolumeL,2)} litres; footprint ${fmt(d.packFootprintM2,4)} m²\nEstimated pack weight: ${fmt(d.estimatedPackMass,1)} kg (cell mass ${fmt(d.mass,1)} kg + ${fmt(v.packMassAllowance,0)}% non-cell mass allowance)\nLayout estimate: ${d.best.rows} rows × ${d.best.cols} columns per layer; enclosure/cooling allowance ${v.caseAllowance} mm per side\n\nLIMITATIONS / REQUIRED VALIDATION\n- Official vehicle sources should be checked for the exact variant's battery energy, voltage, motor power, torque and speed. See links in the app; verify exact model/version.\n- GoGo nominal pack voltage, exact cell model, cell-level current/resistance, kerb mass, payload/GVW, wheel radius and transmission ratio are not treated as verified OEM data in this demo. Treo 8 kW / 42 Nm figures come from an older official brochure and should be confirmed for the exact model/version.\n- Series count uses nearest whole-cell count to target voltage; check the full min/max voltage range against controller, charger and BMS.\n- Cell resistance and current limits must come from manufacturer datasheets and validated measurements.\n- Drive-cycle simulation is simplified and not a validated vehicle test. Model excludes detailed motor maps, cell temperature prediction, ageing, BMS/fuse/wire sizing, regenerative-braking limits, crash protection and certification.\n- Obtain qualified engineering review and test evidence before any real battery design, assembly or charging.\n`}
+/*SIM*/
+const OCV={lfp:[[0,2.9],[.1,3.15],[.2,3.22],[.5,3.29],[.9,3.33],[1,3.5]],nmc:[[0,3],[.1,3.4],[.3,3.6],[.5,3.7],[.8,3.95],[1,4.15]]};
+function ocv(t,s){s=Math.min(1,Math.max(0,s));for(let i=1;i<t.length;i++)if(s<=t[i][0]){const a=t[i-1],b=t[i];return a[1]+(b[1]-a[1])*(s-a[0])/(b[0]-a[0])}return t[t.length-1][1]}
+function cycleProfile(v){const S=v.speed,W={city:[[0,0],[12,25],[22,30],[28,0],[38,0],[52,35],[66,38],[74,0],[84,0],[94,20],[106,28],[114,0],[124,0]],mixed:[[0,0],[12,30],[40,40],[70,45],[90,S],[130,S],[150,0]],steady:[[0,0],[15,S],[300,S],[315,0]]}[v.cycle].map(p=>[p[0],Math.min(p[1],S)]);const T=W[W.length-1][0],out=[];let j=1;for(let t=0;t<=T;t++){while(W[j][0]<t)j++;const a=W[j-1],b=W[j];out.push((a[1]+(b[1]-a[1])*(t-a[0])/(b[0]-a[0]||1))/3.6)}return out}
+function runCycle(d,soc0,rMul){const v=d.v,eff=v.efficiency/100,sp=cycleProfile(v),m=d.loadedMass,tb=OCV[v.chem],R=d.packR*rMul,cap=v.motorPeak*1000/eff,rgCap=v.cellMaxCharge*d.parallel;let soc=soc0,Wh=0,loss=0,dist=0,regenWh=0,drawWh=0,Imax=0,Vmin=1e9,lim=0,col=0;const pw=[];
+for(let i=1;i<sp.length;i++){const vm=(sp[i]+sp[i-1])/2,a=sp[i]-sp[i-1];const F=m*9.81*v.rolling+.5*1.2*v.cd*v.frontal*vm*vm+m*a,Pw=F*vm;let P=Pw>=0?Pw/eff:Pw*v.regen/100;if(P>cap){P=cap;lim++}P+=v.aux;const Voc=d.series*ocv(tb,soc),disc=Voc*Voc-4*R*P;let I;if(disc<0){I=Voc/(2*R);col++}else I=(Voc-Math.sqrt(disc))/(2*R);if(I<-rgCap)I=-rgCap;const V=Voc-I*R,e=V*I/3600;Wh+=e;loss+=I*I*R/3600;if(I>0)drawWh+=e;else regenWh-=e;dist+=vm/1000;soc-=I/(d.packAh*3600);Imax=Math.max(Imax,I);Vmin=Math.min(Vmin,V);pw.push([vm*3.6,V*I/1000])}
+return {Wh,loss,dist,regenWh,drawWh,Imax,Vmin,lim,col,pw}}
+function simulate(d){const v=d.v,a=runCycle(d,.6,1),b=runCycle(d,.1,1.5);const whkm=a.dist>0?Math.max(0,a.Wh/a.dist):0,cellV=b.Vmin/d.series,cutoff=v.chem==='lfp'?2.5:2.8,cellA=b.Imax/d.parallel;
+lastSim={whkm,cellA,cellV};const K=(t,val,s)=>`<div class="kpi"><small>${t}</small><strong>${val}</strong><em>${s}</em></div>`;
+$('simKpis').innerHTML=K('Cycle energy use',fmt(whkm,0)+' Wh/km','simplified drive cycle, battery terminals')+K('Peak pack current',fmt(b.Imax,0)+' A','low SOC, resistance ×1.5')+K('Peak current per cell',fmt(cellA)+' A','= '+fmt(cellA/v.cellAh)+'C, limit '+fmt(v.cellMaxDischarge)+' A')+K('Lowest cell voltage',fmt(cellV)+' V','low-SOC screening estimate')+K('Regen recovered',fmt(a.regenWh/Math.max(1e-9,a.drawWh)*100,0)+' %','of energy drawn')+K('Resistive loss',fmt(a.loss/Math.max(1e-9,a.drawWh)*100,1)+' %','I²R, cells only');
+const n=[];
+if(cellV<cutoff)n.push(['bad','Cell voltage sags to '+fmt(cellV)+' V at 10% SOC, below the '+cutoff+' V cut-off. Expect BMS trips; add parallel cells or use a lower-resistance cell.']);
+if(cellA>v.cellMaxDischarge)n.push(['bad','Peak per-cell current '+fmt(cellA)+' A exceeds the entered limit.']);
+if(b.col)n.push(['bad','Pack voltage collapse for '+b.col+' s at 10% SOC: the pack cannot deliver the demanded power.']);
+if(a.lim)n.push(['warn','Motor peak power limits the cycle for '+a.lim+' s, so this speed profile is not fully achievable.']);
+
+n.push(['info','Flat road, 1 s steps, OCV table and ×1.5 low-SOC resistance are simplified assumptions. Replace with datasheet curves before trusting the numbers.']);
+$('simNotes').innerHTML=n.map(x=>`<div class="status ${x[0]}">${x[1]}</div>`).join('');
+const N=a.pw.length,W=600,H=130,mx=Math.max(1,...a.pw.map(p=>Math.abs(p[1]))),L=(k,f)=>a.pw.map((p,i)=>(i*W/(N-1)).toFixed(1)+','+f(p[k]).toFixed(1)).join(' ');
+$('simChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;background:#f8fafd;border-radius:10px"><line x1="0" x2="${W}" y1="${H/2}" y2="${H/2}" stroke="#cfd9e8"/><polyline fill="none" stroke="#2058d4" stroke-width="1.5" points="${L(0,s=>H-4-s/Math.max(1,v.speed)*(H-8))}"/><polyline fill="none" stroke="#c77700" stroke-width="1.5" points="${L(1,p=>H/2-p/mx*(H/2-6))}"/></svg><div class="tiny">Blue: speed (0–${fmt(v.speed)} km/h) · Orange: battery power (±${fmt(mx)} kW, below the centre line = regen) · ${N} s</div>`}
+/*ENDSIM*/
+
+/*UX*/
+let cmp=[],lastSim=null;
+const CELLS={ex50:['LFP 50Ah (example, 0.5C)','lfp',50,.5,25,25,1,1800],lfp100:['LFP 100Ah prismatic, 1C (example)','lfp',100,.5,100,50,1.9,4500],lfp280:['LFP 280Ah prismatic, 1C (example)','lfp',280,.25,280,140,5.4,13000],nmc5:['NMC 21700 5Ah energy cell (example)','nmc',5,25,10,5,.07,350],nmc4:['NMC 21700 4Ah power cell (example)','nmc',4,15,30,4,.07,450]};
+const cellIds=['chem','cellAh','cellR','cellMaxDischarge','cellMaxCharge','cellMass','cellCost'];
+const simpleIds=['vehicle','kerb','passengerWeight','cargo','targetVoltage','targetEnergy','motorPeak','speed','cellSel','cellLength','cellWidth','cellHeight','cellSpacing','packLayers','caseAllowance','packMassAllowance'];
+function applyCell(k){const c=CELLS[k];if(c)cellIds.forEach((id,i)=>$(id).value=c[i+1])}
+function setMode(m){window.mode='simple';document.body.classList.add('simple');}
+function saveState(){try{const o={mode:window.mode,cell:$('cellSel').value};for(const id of ids)o[id]=$(id).value;localStorage.setItem('bw7',JSON.stringify(o));localStorage.setItem('bw6cmp',JSON.stringify(cmp))}catch(e){}}
+function loadState(){let o=null;try{o=JSON.parse(localStorage.getItem('bw7')||'null');cmp=JSON.parse(localStorage.getItem('bw6cmp')||'[]')}catch(e){cmp=[]}return o}
+function renderCmp(){$('cmpBody').innerHTML=cmp.length?cmp.map(r=>`<tr><td>${r.n}</td><td>${r.sp}</td><td>${r.cells}</td><td>${r.kwh}</td><td>${r.kg}</td><td>${r.cost}</td><td>${r.wh}</td><td>${r.c}</td></tr>`).join(''):'<tr><td colspan="8" class="tiny">No saved designs yet. Change inputs, then click “Save design to compare”.</td></tr>'}
+$('cmpSave').addEventListener('click',()=>{if(!last||!lastSim)return;const d=last;cmp.push({n:$('vehicle').selectedOptions[0].text+' · '+$('cellSel').selectedOptions[0].text.split(' (')[0],sp:d.series+'S'+d.parallel+'P',cells:d.total,kwh:fmt(d.packWh/1000),kg:fmt(d.mass,0),cost:rupee(d.cost),wh:fmt(lastSim.whkm,0),c:fmt(lastSim.cellA/d.v.cellAh)+'C'});if(cmp.length>6)cmp.shift();renderCmp();saveState()});
+$('cmpClear').addEventListener('click',()=>{cmp=[];renderCmp();saveState()});
+
+$('cellSel').innerHTML=Object.entries(CELLS).map(([k,c])=>`<option value="${k}">${c[0]}</option>`).join('')+'<option value="custom">Custom (advanced cell values)</option>';
+document.querySelectorAll('aside .field').forEach(f=>{const el=f.querySelector('input,select');if(el&&!simpleIds.includes(el.id))f.classList.add('adv')});
+cellIds.forEach(id=>['input','change'].forEach(ev=>$(id).addEventListener(ev,()=>{$('cellSel').value='custom'})));
+$('cellSel').addEventListener('change',e=>{applyCell(e.target.value);render()});
+document.querySelectorAll('aside input,aside select').forEach(e=>{e.addEventListener('input',render);e.addEventListener('change',render)});
+function spec(d){const v=d.v,s=lastSim,n=d.series,cut=v.chem==='lfp'?[2.5,3.65]:[2.8,4.2];const R=r=>r.map(x=>`<span>${x[0]}</span><b>${x[1]}</b>`).join('');
+$('specBody').innerHTML=`<div class="status info"><b>Calculated battery design</b> · based on the vehicle, motor, operating and cell parameters entered below.</div><div class="kpis" style="margin:12px 0"><div class="kpi"><small>Configuration</small><strong>Series – ${n} · Parallel – ${d.parallel}</strong><em>${d.total} cells</em></div><div class="kpi"><small>Nominal voltage</small><strong>${fmt(d.nominalV)} V</strong><em>${fmt(n*cut[0])}–${fmt(n*cut[1])} V window</em></div><div class="kpi"><small>Capacity</small><strong>${fmt(d.packAh)} Ah</strong><em>${fmt(d.packWh/1000)} kWh nominal, ${fmt(d.packWh/1000*v.usable/100)} usable</em></div><div class="kpi"><small>Total operating weight</small><strong>${fmt(d.loadedMass)} kg</strong><em>vehicle + occupants + additional load</em></div><div class="kpi"><small>Required usable energy</small><strong>${fmt(d.requiredEnergy)} kWh</strong><em>load factor ${fmt(d.loadEnergyFactor)}× + reserve</em></div></div><div class="card" style="margin-top:12px;background:#f8faff"><h3>Physical battery pack estimate</h3><p class="sub">Calculated from cell dimensions, selected layer count, spacing and enclosure allowance.</p><div class="kpis physical-kpis"><div class="kpi"><small>Pack Length</small><strong>${fmt(d.packLength,1)} mm</strong><em>including enclosure allowance</em></div><div class="kpi"><small>Pack Width</small><strong>${fmt(d.packWidth,1)} mm</strong><em>including enclosure allowance</em></div><div class="kpi"><small>Pack Volume</small><strong>${fmt(d.packVolumeL,2)} L</strong><em>Length × Width × Thickness</em></div><div class="kpi"><small>Pack Thickness</small><strong>${fmt(d.packHeight,1)} mm</strong><em>Including enclosure allowance</em></div><div class="kpi"><small>Estimated Pack Weight</small><strong>${fmt(d.estimatedPackMass,1)} kg</strong><em>cells + ${fmt(v.packMassAllowance,0)}% non-cell allowance</em></div></div><div class="rows" style="margin-top:12px"><span>Pack height (needed for volume)</span><b>${fmt(d.packHeight,1)} mm</b><span>Cell layout per layer</span><b>${d.best.rows} rows × ${d.best.cols} columns</b><span>Number of layers</span><b>${fmt(v.packLayers,0)}</b><span>Cell-only mass</span><b>${fmt(d.mass,1)} kg</b><span>Footprint area</span><b>${fmt(d.packFootprintM2,4)} m²</b></div><div class="status warn">Preliminary rectangular estimate only. Actual pack geometry depends on cell orientation, busbars, BMS, connectors, cooling channels, mounts, clearances and enclosure CAD.</div></div><div class="resultsgrid"><div class="result"><h4>Electrical limits</h4><div class="rows">${R([['Max continuous discharge',fmt(d.continuousPackA)+' A'],['Peak current needed',fmt(d.peakPackA)+' A'],['Max charge current',fmt(d.parallel*v.cellMaxCharge)+' A'],['Charge current needed',fmt(d.chargePackA)+' A'],['Pack DC resistance',fmt(d.packR*1000)+' mΩ']])}</div></div><div class="result"><h4>Cells, cost, thermal</h4><div class="rows">${R([['Cell',$('cellSel').selectedOptions[0].text.split(' (')[0]],['Cell mass (cells only)',fmt(d.mass)+' kg'],['Cell cost',rupee(d.cost)],['Peak cell C-rate (screening estimate)',fmt(s.cellA/v.cellAh)+'C']])}</div></div></div>`}
+/*ENDUX*/
+
+$('analyze').addEventListener('click',render);
+$('reset').addEventListener('click',()=>{if($('vehicle').value==='custom'){for(const id of ids){if(id!=='vehicle')$(id).value=defaults[id]}render()}else applyVehiclePreset()});
+$('download').addEventListener('click',()=>{if(!last)render();if(!last)return;const blob=new Blob([reportText()],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='BatteryWise_Design_Report.txt';a.click();URL.revokeObjectURL(a.href)});
+$('print').addEventListener('click',()=>window.print());
+const vehicleFixedIds=['kerb','payloadCapacity','cargo','passengers','passengerWeight','driverWeight','motorType','transmission','motorContinuous','motorPeak','torque','speed','wheelRadius','ratio','targetEnergy'];
+function setVehicleFieldsLocked(locked){ vehicleFixedIds.forEach(id=>{const el=$(id); if(el) el.disabled=false;}); }
+function applyVehiclePreset(){
+ const vehicle=$('vehicle').value;
+ // Every field stays editable: manufacturer facts are defaults, not hard locks.
+ setVehicleFieldsLocked(false);
+ if(vehicle==='gogo'){
+  $('kerb').value=500; $('payloadCapacity').value=500;
+  $('cargo').value=0; $('passengers').value=0; $('passengerWeight').value=70; $('driverWeight').value=70;
+  $('reserve').value=0;
+  $('cycle').value='mixed'; $('aux').value=50; $('rolling').value=.0088; $('usable').value=100;
+  $('motorType').value='Permanent Magnet Synchronous (PMS)'; $('transmission').value='2-speed AMT (GoGo reference)';
+  $('motorContinuous').value=5.5; $('motorPeak').value=5.5; $('torque').value=40; $('speed').value=50;
+  $('wheelRadius').value=.25; $('ratio').value=8; $('targetEnergy').value=12.1;
+  $('targetVoltage').value=51.2; $('chargeTime').value=5.5;
+  $('chem').value='lfp'; $('cellAh').value=47.3; $('cellR').value=.5; $('cellMaxDischarge').value=25; $('cellMaxCharge').value=25; $('cellMass').value=.95; $('cellCost').value=1700; $('cellSel').value='custom';
+  $('vehicleNotes').innerHTML='<div class="status info"><b>Bajaj GoGo P7012 (certified-range match):</b> Bajaj states 12.1 kWh LFP and a 251 km certified range, with 5.5 kW power, 40 Nm and 50 km/h top speed. The pack-energy target is set to 12.1 kWh for this reference preset. <b>Assumptions, not Bajaj data:</b> 500 kg kerb mass, 0.0088 rolling resistance, 50 W auxiliary load, 51.2 V pack and the 47.3 Ah cell (16S5P). This preset is a reference configuration, not a validated vehicle model.</div>';
+ } else if(vehicle==='treo'){
+  $('kerb').value=700; $('payloadCapacity').value=400;
+  $('cargo').value=20; $('passengers').value=3; $('passengerWeight').value=265; $('driverWeight').value=70;
+  $('reserve').value=0;
+  $('motorType').value='Other / custom'; $('transmission').value='Single-speed reduction';
+  $('motorContinuous').value=8; $('motorPeak').value=8; $('torque').value=42; $('speed').value=55;
+  $('wheelRadius').value=.25; $('ratio').value=8; $('targetEnergy').value=7.4;
+  $('targetVoltage').value=48; $('chargeTime').value=3.83;
+  $('vehicleNotes').innerHTML='<div class="status info"><b>Mahindra Treo loaded:</b> official page lists 7.4 kWh lithium-ion, 48 V, 110 km real-world range (139 km ARAI), 55 km/h and 3 h 50 min ±10 min charging. An older official brochure mentions 8 kW and 42 Nm; the exact power rating should be checked against the exact model/version. 700 kg / 400 kg, 0.25 m wheel radius and 1:1 reduction are editable demo assumptions. LFP is selected in the cell model by default, but Treo cell chemistry is not confirmed as LFP. <a href="https://mahindralastmilemobility.com/treo" target="_blank" rel="noopener">Open official source ↗</a>';
+ } else {
+  $('vehicleNotes').innerHTML='<div class="status info">Custom EV selected. Enter the exact vehicle specifications from its official brochure or technical manual. Use a cell manufacturer datasheet for all cell-level parameters. All vehicle and design inputs remain editable.</div>';
+ }
+ render();
+}
+$('vehicle').addEventListener('change',applyVehiclePreset);
+$('kerb').addEventListener('input',render); $('payloadCapacity').addEventListener('input',render);
+(function(){const o=loadState();setMode('simple');if(o&&o.vehicle){$('vehicle').value=o.vehicle;applyVehiclePreset();for(const id of ids)if(id!=='vehicle'&&o[id]!==undefined)$(id).value=o[id];$('cellSel').value=o.cell||'custom';render()}else{$('cellSel').value='ex50';applyVehiclePreset()}renderCmp()})();
+</script></body></html>
